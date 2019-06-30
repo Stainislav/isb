@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<p>
+
+<div class="container">
+    <a href="{% url 'home' %}">Главная</a>
+</div>
+	<p><p><p><p>
+
+<form method="post" id="submit_form" action="{% url 'books_search' %}"> {% csrf_token %}
+    <input type="hidden" name="checked_author" value="{{checked_author}}">
+    <input type="hidden" name="book_list" value="{{books}}">
+    <div class="form-group col-md-4">
+        <label for="weight">Поиск по автору: {{checked_author}}</label>
+        <input class="form-control" name='book' id='{{checked_author}}' type="text" placeholder="Введите название книги">		
+    </div>
+    <div class="form-group col-md-4">
+        <button id="button" type="submit" class="btn btn-secondary">Найти</button>
+    </div>    
+<div class="form-row">
+{% for book in books %}
+    <div class="form-group col-md-4">
+        <div class="card" >
+            <img src="{{book.image}}" alt="">
+            <div class="card-body">
+                <h5 class="card-title">{{book.title}}</h5>
+                <p class="card-text">{{book.title_long}}</p>
+                <p class="card-text">Издание: {{book.edition}}</p>
+                <p class="card-text">Дата публикации: {{book.date_published}}</p>
+                <p class="card-text">Авторы: {% for author in book.authors %}{{author}}, {%endfor%}</p>
+                <p class="card-text">isbn13: {{book.isbn13}}</p>
+                <p class="card-text">msrp: {{book.msrp}}</p>
+                <p class="card-text">isbn: {{book.isbn}}</p>
+            </div>        
+        </div>
+    </div>          
+{% endfor %}           
+</div> 
+{{error_message}}
+</form>
+
+
+{% endblock %}
+

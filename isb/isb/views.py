@@ -1,0 +1,135 @@
+from django.shortcuts import render
+from django.http import JsonResponse
+import requests as req
+import isbntools
+
+
+KEY = '42480_3bb6b53146955777e4d086a19a676805'
+HEADER = {'Authorization': KEY}
+
+BASE_URL = 'https://api2.isbndb.com'
+
+
+def home(request):
+    return render(request, 'home.html', locals())
+
+
+def books(request):
+
+    # Get a checked author.
+    data = request.POST
+    checked_author = data.get('authors')
+
+    if not checked_author:
+        error_message = 'Книг с таким названием не найдено, попробуйте продолжить поиск, изменив название.'
+        return render(request, 'home.html', locals())
+
+    # Get an author details.
+    url = BASE_URL + '/author/' + checked_author
+    response = req.get(url, headers=HEADER)
+
+    error_message = ''
+
+    if not response:
+        error_message = 'Этого автора нет в базе данных! Попробуйте продолжить поиск, изменив имя автора.'
+        return render(request, 'home.html', locals())
+
+    items = response.json()['books']
+    
+    books = []
+    authors_list = []
+    books_items = []
+
+    # Get books with authors only.
+    for i in items:
+        if 'authors' in i:
+            books_items.append(i)
+
+    # Get the checked author books only.
+    for i in books_items:
+        for j in i['authors']:
+            if j == checked_author:
+                books.append(i)
+
+    if books == []:
+        error_message = 'В данный момент в базе данных нет книг этого автора! Попробуйте продолжить поиск, изменив автора.'
+        return render(request, 'home.html', locals())  
+    
+    return render(request, 'books.html', locals())
+
+
+# Search function for an ajax.
+def search(request):
+ 
+    data = request.POST
+    author = data.get("author")
+    
+    # Amount of items we will get.
+    page_size = '?pageSize=1000'
+
+    # Get the authors.
+    url = BASE_URL + '/authors/' + author + page_size
+    response = req.get(url, headers=HEADER)
+
+    authors = response.json() ['authors']
+    authors = sorted(authors)    
+    
+    html = ''
+
+    for author in authors:
+        html = html + '<option name="checked_author" value="' + author + '">' + author
+
+    data = {
+        'authors': html
+    }
+
+    return JsonResponse(data)
+
+
+def books_search(request):
+
+    error_message = ''
+
+    data = request.POST
+    book = data.get("book")
+
+    if not book:
+        error_message = 'Книг с таким названием не найдено, попробуйте продолжить поиск, изменив название.'
+        return render(request, 'books.html', locals())
+
+    checked_author = data.get('checked_author')
+    book_list = data.get('book_list')
+    
+    # Get the books.
+    url = BASE_URL + '/books/' + book
+    response = req.get(url, headers=HEADER)
+
+    if not response:
+        error_message = 'Книг с таким названием не найдено, попробуйте продолжить поиск, изменив название.'
+        return render(request, 'books.html', locals())
+
+    items = response.json()['books']
+    
+    books = []
+    authors_list = []
+
+    for i in items:
+        if 'authors' in i:        
+            authors_list.append(i['authors'])
+        books.append(i)
+
+    authors = []
+  
+    for i in authors_list:
+        for j in i:
+            authors.append(j)
+        
+    for i in authors:
+        if i != checked_author:
+            books = []
+            error_message = 'Книг с таким названием не найдено, попробуйте продолжить поиск, изменив название.'
+            return render(request, 'books.html', locals())
+    
+    return render(request, 'books.html', locals())
+
+

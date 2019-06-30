@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<p>
+
+<div class="container">
+    <a href="{% url 'home' %}">Главная</a>
+</div>
+	<p><p><p><p>
+{{error_message}}
+Этого автора нет в базе данных! Попробуйте продолжить поиск, изменив имя автора.
+{% endblock %}
+

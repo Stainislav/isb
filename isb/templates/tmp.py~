@@ -1,0 +1,9 @@
+{{book.title_long}}
+{{book.publisher}}
+        {{book.edition}}
+        {{book.date_published}}
+        {{book.authors}}
+        {{book.isbn13}}
+        {{book.msrp}}
+        {{book.isbn}}
+

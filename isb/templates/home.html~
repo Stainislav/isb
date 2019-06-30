@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<p>
+<div align="center">
+    <h2>Поиск книг в базе данных ISBNDB</h2>
+</div>
+<p><p>
+
+<form method="post" id="submit_form" action="{% url 'books' %}"> {% csrf_token %}
+    <div class="form-row">
+        <div class="form-group col-md-4">
+			<input class="form-control" id="author" name='author' value='{{checked_author}}' type="text" placeholder="Введите имя автора">
+        </div>
+        <div class="form-group col-md-4">
+            <input list="authors_id" value="" name="authors" class="col-md-12 custom-select custom-select-md">
+            <datalist id="authors_id">
+              <option></option>
+            </datalist> 
+            <p>
+            <span id="error">{{error_message}}</span>           
+        </div>
+        <div class="form-group col-md-4">
+            <button id="button" type="submit" class="btn btn-secondary">Найти</button>
+        </div>
+    </div>       
+</form>
+
+<p><p>
+
+
+
+
+{% block javascript %}
+
+<script>
+    $("#author").on('keyup', function () {
+     
+      var csrf_token = jQuery("[name=csrfmiddlewaretoken]").val();
+      var author = $("#author").val();
+                
+      $.ajax({        
+        url: 'search/',
+        type: 'POST',
+        data: {
+          'author': author,     
+          'csrfmiddlewaretoken': csrf_token
+        },
+        dataType: 'json',
+        success: function (data) {
+          html_string = '';
+          $('#error').html(html_string);
+          var html_string = data.authors;
+          $("#authors_id").html(html_string);   
+        },
+        error: function() {
+          console.log('Error!');
+        }    
+      });    
+    });
+    
+    $("#button").click(function (e) {
+        var checked_author = $('[name=authors]').val();
+        authors = $('#authors_id').val();
+
+        if (checked_author == '') {
+          html_string = 'Выберите автора из списка!';
+          $('#error').html(html_string);
+          return false;        
+        }
+    });
+
+    $('input').on('keyup', function(){
+        $(this).next().show();
+        $(this).next().hide();
+      });
+</script>
+{% endblock %}
+
+{% endblock %}
+
+ 
+                        
